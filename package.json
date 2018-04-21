@@ -1,0 +1,23 @@
+{
+    "name": "pubsg",
+    "version": "0.0.1",
+    "description": "",
+    "main": "bin/pubsg.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": ""
+    },
+    "bin": {
+        "pubsg": "./bin/pubsg.js"
+    },
+    "keywords": ["svn", "git", "publish"],
+    "author": "gu jie yi",
+    "license": "ISC",
+    "dependencies": {
+        "chalk": "^2.4.0",
+        "commander": "^2.15.1"
+    }
+}
