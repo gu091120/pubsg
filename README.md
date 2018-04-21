@@ -27,3 +27,8 @@
 ### 发布
 
 `pubsg start`
+
+### 参数
+
+*   `--ftype/-t [js,html,png]`:本次需要更新文件类型，默认是 `js,html,css`
+*   `--message/-m [commit message]`:svn 提交的 msg，默认是 `defaultMessage` 注意：不要有空格

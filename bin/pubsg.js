@@ -12,7 +12,6 @@ let SVNPATH, DISTPATH, SH_CLEARSVN, SH_ADDSVN, st;
 let filetype = ["js", "html", "css"];
 
 const SH_BUILD = publishSet.builShell;
-console.log(SH_BUILD);
 
 const execOpt = {
     cwd: dir,
