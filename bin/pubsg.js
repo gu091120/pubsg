@@ -5,13 +5,12 @@ const exce = require("child_process").exec;
 const chalk = require("chalk");
 const path = require("path");
 const dir = process.cwd();
-const { publishSet, version, builShell } = require(dir + "/package.json");
+const { publishSet, builShell } = require(dir + "/package.json");
+const { version } = require("../package.json");
 
-let SVNPATH, DISTPATH, SH_CLEARSVN, SH_ADDSVN, st;
+let SVNPATH, DISTPATH, SH_CLEARSVN, SH_ADDSVN, SH_BUILD, st;
 
 let filetype = ["js", "html", "css"];
-
-const SH_BUILD = publishSet.builShell;
 
 const execOpt = {
     cwd: dir,
@@ -24,6 +23,7 @@ function runPublish() {
     DISTPATH = path.resolve(dir, distPath);
     SH_CLEARSVN = `cd ${SVNPATH} && svn up`;
     SH_ADDSVN = `cp -rf ${DISTPATH}/* ${SVNPATH} && cd  ${SVNPATH}`;
+    SH_BUILD = publishSet.builShell;
     if (!SVNPATH || !DISTPATH) {
         console.log(chalk.red("发布失败 ⛔"));
         return;
@@ -136,7 +136,7 @@ function getPath() {
 }
 
 program
-    .version("v" + version, "-v", "--version")
+    .version("v" + version)
     .usage("[options] <file ...>")
     .option("-m, --message <msg>", "commit message ")
     .option("-e, --env <environment>", "set environment")
