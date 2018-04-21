@@ -8,7 +8,7 @@
     },
     "repository": {
         "type": "git",
-        "url": ""
+        "url": "https://github.com/gu091120/pubsg.git"
     },
     "bin": {
         "pubsg": "./bin/pubsg.js"
