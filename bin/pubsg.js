@@ -123,7 +123,7 @@ function getTip(step) {
 
 function getPath() {
     try {
-        return require(`${publishSet.mySet}`);
+        return require(path.resolve(dir, publishSet.mySet));
     } catch (e) {
         try {
             return publishSet
