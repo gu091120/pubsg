@@ -112,7 +112,7 @@ function addSvn() {
 
 function checkFileType() {
     if (program.ftype) {
-        if (program === "*") {
+        if (program.ftype === "*") {
             filetype = ALLTYPE;
         } else {
             try {
