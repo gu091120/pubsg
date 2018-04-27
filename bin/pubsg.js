@@ -8,9 +8,20 @@ const dir = process.cwd();
 const { publishSet, builShell } = require(dir + "/package.json");
 const { version } = require("../package.json");
 
-let SVNPATH, DISTPATH, SH_CLEARSVN, SH_ADDSVN, SH_BUILD, st;
+let SVNPATH, DISTPATH, SH_CLEARSVN, SH_ADDSVN, SH_BUILD, st, filetype;
 
-let filetype = ["js", "html", "css"];
+let DEFAULTFILETYPE = ["js", "html", "css"];
+const ALLTYPE = [
+    "js",
+    "html",
+    "css",
+    "png",
+    "svg",
+    "json",
+    "jpeg",
+    "jpg",
+    "gif"
+];
 
 const execOpt = {
     cwd: dir,
@@ -101,12 +112,18 @@ function addSvn() {
 
 function checkFileType() {
     if (program.ftype) {
-        try {
-            filetype = program.ftype.split(",");
-        } catch (e) {
-            console.log(chalk.red(`ftype:错误！⛔ info:${e} `));
-            return;
+        if (program === "*") {
+            filetype = ALLTYPE;
+        } else {
+            try {
+                filetype = program.ftype.split(",");
+            } catch (e) {
+                console.log(chalk.red(`ftype:错误！⛔ info:${e} `));
+                return;
+            }
         }
+    } else {
+        filetype = DEFAULTFILETYPE;
     }
     filetype.map(val => {
         SH_CLEARSVN += ` && svn delete *.${val}  --force`;
