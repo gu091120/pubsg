@@ -30,5 +30,5 @@
 
 ### 参数
 
-*   `--ftype/-t [js,html,png]`:本次需要更新文件类型，默认是 `js,html,css`
+*   `--ftype/-t [js,html,png]`:本次需要更新文件类型，默认是 `js,html,css` `-t all`:为[js,png,svg,gif,css,html]
 *   `--message/-m [commit message]`:svn 提交的 msg，默认是 `defaultMessage` 注意：不要有空格

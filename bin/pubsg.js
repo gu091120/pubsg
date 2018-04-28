@@ -11,17 +11,7 @@ const { version } = require("../package.json");
 let SVNPATH, DISTPATH, SH_CLEARSVN, SH_ADDSVN, SH_BUILD, st, filetype;
 
 let DEFAULTFILETYPE = ["js", "html", "css"];
-const ALLTYPE = [
-    "js",
-    "html",
-    "css",
-    "png",
-    "svg",
-    "json",
-    "jpeg",
-    "jpg",
-    "gif"
-];
+const ALLTYPE = ["js", "html", "css", "png", "gif"];
 
 const execOpt = {
     cwd: dir,
@@ -112,7 +102,8 @@ function addSvn() {
 
 function checkFileType() {
     if (program.ftype) {
-        if (program.ftype === "*") {
+        console.log(program.ftype);
+        if (program.ftype === "all") {
             filetype = ALLTYPE;
         } else {
             try {
