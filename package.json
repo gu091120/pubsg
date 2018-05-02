@@ -1,6 +1,6 @@
 {
     "name": "pubsg",
-    "version": "0.0.9",
+    "version": "0.0.11",
     "description": "",
     "main": "bin/pubsg.js",
     "scripts": {
@@ -13,11 +13,7 @@
     "bin": {
         "pubsg": "./bin/pubsg.js"
     },
-    "keywords": [
-        "svn",
-        "git",
-        "publish"
-    ],
+    "keywords": ["svn", "git", "publish"],
     "author": "gu jie yi",
     "license": "ISC",
     "dependencies": {
