@@ -1,7 +1,9 @@
 #!/usr/bin/env node
-
 const program = require("commander");
-const exce = require("child_process").exec;
+const Promise = require("promise");
+const Svn = require("./svn.js");
+const exec = require("child_process").exec;
+const spawn = require("child_process").spawn;
 const chalk = require("chalk");
 const path = require("path");
 const dir = process.cwd();
@@ -10,15 +12,17 @@ const { version } = require("../package.json");
 const publishSet = pgj.publishSet;
 const pVersion = pgj.version;
 
-let SVNPATH, DISTPATH, SH_CLEARSVN, SH_ADDSVN, SH_BUILD, st, filetype, pv;
+let svn_path,
+    dist_path,
+    shClearSvn,
+    sh_cp_dist,
+    sh_build,
+    st,
+    file_type,
+    pv,
+    svn;
 
-let DEFAULTFILETYPE = ["js", "html", "css"];
-const ALLTYPE = ["js", "html", "css", "png", "gif"];
-
-const execOpt = {
-    cwd: dir,
-    maxBuffer: 2000 * 1024
-};
+const defaultFileType = `*.js *.html *.css`;
 
 function addVersion(callback) {
     let arr = pVersion.split(".");
@@ -30,144 +34,178 @@ function addVersion(callback) {
         }
         type = "minor";
     }
-    exce(`npm version ${type}`, execOpt, (err, stdout) => {
-        if (err) {
-            console.log(err);
-            console.log(chalk.red("版本修改失败 🚨"));
-        }
-        callback && callback();
-        pv = stdout;
+    return new Promise((resolve, reject) => {
+        exec(`npm version ${type}`, { cwd: dir }, (err, stdout) => {
+            if (err) {
+                reject("版本修改失败 🚨", err);
+            }
+            pv = stdout;
+            console.log(chalk.green("addVersion ✅"));
+            resolve();
+        });
     });
 }
 
 function runPublish() {
-    const { svnPath, distPath } = getPath();
-    SVNPATH = path.resolve(dir, svnPath);
-    DISTPATH = path.resolve(dir, distPath);
-    SH_CLEARSVN = `cd ${SVNPATH} && svn up`;
-    SH_ADDSVN = `cp -rf ${DISTPATH}/* ${SVNPATH} && cd  ${SVNPATH}`;
-    SH_BUILD = publishSet.builShell;
-    if (!SVNPATH || !DISTPATH) {
+    init();
+    buildStatic()
+        .then(addVersion)
+        .then(addDateFile)
+        .then(svnUpdate)
+        .then(svnDel)
+        .then(cpDist)
+        .then(svnAdd)
+        .then(svnCommit)
+        .catch((type, msg) => {
+            console.log(chalk.red(type), msg);
+        });
+}
+function init() {
+    let { svnPath, distPath } = getPath();
+    svn_path = path.resolve(dir, svnPath);
+    dist_path = path.resolve(dir, distPath);
+    sh_build = publishSet.builShell;
+    if (!svn_path || !dist_path) {
         console.log(chalk.red("发布失败 🚨"));
         return;
     }
-    checkFileType();
-    //addVersion();
-    addVersion(buildStatic);
+    sh_cp_dist = `cp -rf ${dist_path}/* ${svn_path} && cd  ${svn_path}`;
+    if (program.ftype) {
+        file_type = program.ftype
+            .split(",")
+            .map(val => {
+                return "*." + val;
+            })
+            .join(" ");
+    } else {
+        file_type = defaultFileType;
+    }
+
+    if (program.first) {
+    }
+    svn = new Svn({
+        cwd: svn_path
+    });
 }
 
 function svnCommit() {
-    let ENV;
-    let message = program.message || "defaultMessage";
-    ENV = program.env || "dev";
-    message = message.replace(/\s/g, "--");
-    if (!message) {
-        console.log(chalk.red("提交必须输入 message"));
-        return;
-    }
-    let shell = `cd ${SVNPATH} && svn commit -m `;
-    if (ENV == "pro") {
-        shell = "cd ../trunk && svn commit -m  ";
-    }
-
-    let t = getTip("svnCommit", "");
-
-    exce(shell + message, (err, stdout, stderr) => {
-        clearInterval(t);
-        const et = new Date();
-        if (err) {
-            console.log(`🚨 ${chalk.red(err)}`);
-            return;
-        }
-
-        console.log(chalk.cyan(stdout));
-        console.log(chalk.green(`${ENV}环境发布成功 ✅ \n当前项目版本：${pv}`));
-        console.log("⏰：" + (et - st) / 1000 + "s");
-    });
-}
-
-function addDateFile(callback) {
-    exce(
-        `cd ${DISTPATH} &&  mkfile -nv 1kb 版本号-${pv.replace(/\n/g, "")}.txt`,
-        execOpt,
-        err => {
-            if (err) {
-                console.log(err);
-                console.log(chalk.red("添加发布版本号文件失败 🚨"));
-                return;
+    return new Promise((resolve, reject) => {
+        let ENV;
+        let message = program.message || "defaultMessage";
+        ENV = program.env || "dev";
+        message = message.replace(/\s/g, "--");
+        svn.commit(
+            message,
+            () => {
+                const et = new Date();
+                console.log(
+                    chalk.green(`${ENV}环境发布成功 ✅ \n当前项目版本：${pv}`)
+                );
+                console.log("⏰：" + (et - st) / 1000 + "s");
+                resolve && resolve();
+            },
+            err => {
+                reject("error:svnCommit 🚨", err);
             }
-            callback && callback();
-        }
-    );
-}
-
-function buildStatic(cb) {
-    let t = getTip("buildStatic", "📦");
-    exce(SH_BUILD, execOpt, err => {
-        clearInterval(t);
-        if (err) {
-            console.log(err, "error:buildStatic 🚨");
-            return;
-        }
-        console.log(chalk.green("success:buildStatic ✅"));
-        addDateFile(clearSvn);
+        );
     });
 }
 
-function clearSvn() {
-    let t = getTip("clearSvn", "📤");
-    exce(SH_CLEARSVN, execOpt, err => {
-        clearInterval(t);
-        if (err) {
-            console.log(err, "error:clearSvn 🚨");
-            return;
-        }
-        console.log(chalk.green("success:clearSvn ✅"));
-        addSvn();
-    });
-}
-
-function addSvn() {
-    let t = getTip("addSvn", "📥");
-    exce(SH_ADDSVN, execOpt, err => {
-        clearInterval(t);
-        if (err) {
-            console.log(err, "error:addSvn 🚨");
-            return;
-        }
-        console.log(chalk.green("success:addSvn ✅"));
-        svnCommit();
-    });
-}
-
-function checkFileType() {
-    if (program.ftype) {
-        //console.log(program.ftype);
-        if (program.ftype === "all") {
-            filetype = ALLTYPE;
-        } else {
-            try {
-                filetype = program.ftype.split(",");
-            } catch (e) {
-                console.log(chalk.red(`ftype:错误！⛔ info:${e} `));
-                return;
+function addDateFile() {
+    return new Promise((resolve, reject) => {
+        exec(
+            `mkfile -nv 1kb 版本号-${pv.replace(/\n/g, "")}.txt`,
+            { cwd: dist_path, encoding: "utf8" },
+            err => {
+                if (err) {
+                    reject("添加发布版本号文件失败 🚨", err);
+                    return;
+                }
+                console.log(chalk.green("addDateFile ✅"));
+                resolve();
             }
-        }
-    } else {
-        filetype = DEFAULTFILETYPE;
-    }
-    filetype.push("txt"); //添加日期文件
-    filetype.map(val => {
-        SH_CLEARSVN += ` && svn delete *.${val}  --force`;
-        SH_ADDSVN += ` && svn add *.${val}  --force`;
+        );
     });
 }
 
-function getTip(step, icon) {
-    var t = setInterval(function() {
-        console.log(chalk.blue(`正在${step},请稍等...${icon || "🍼"}`));
-    }, 1000);
-    return t;
+function buildStatic() {
+    return new Promise((reslove, reject) => {
+        arr = sh_build.split(" ");
+        const strem = spawn(arr.splice(0, 1)[0], arr, {
+            cwd: dir,
+            encoding: "utf8"
+        });
+        strem.stdout.on("data", data => {
+            console.log(data + " ");
+        });
+        strem.stderr.on("data", data => {
+            const st = process.stderr;
+            st.cursorTo(0);
+            st.write(`📦 ${chalk.magenta(data)} `);
+            st.clearLine(1);
+        });
+        strem.stdout.on("end", () => {
+            console.log(chalk.green("buildStatic ✅"));
+            reslove();
+        });
+        strem.stdout.on("error", err => {
+            reject("error:buildStatic 🚨", err);
+            process.exit();
+        });
+    });
+}
+
+function svnDel() {
+    return new Promise((reslove, reject) => {
+        if (!program.delete) {
+            reslove();
+            return;
+        }
+        svn.del(
+            file_type,
+            () => {
+                console.log(chalk.green("clearSvn ✅"));
+                reslove();
+            },
+            err => {
+                reject("error:clearSvn 🚨", err);
+            }
+        );
+    });
+}
+
+function svnUpdate() {
+    return new Promise((reslove, reject) => {
+        try {
+            svn.update(
+                " ",
+                () => {
+                    console.log(chalk.green("svnUpdate ✅"));
+                    reslove();
+                },
+                err => {
+                    reject("error:svnUpdate 🚨", err);
+                }
+            );
+        } catch (err) {
+            console.log(err);
+        }
+    });
+}
+
+function svnAdd() {
+    return new Promise((resolve, reject) => {
+        svn.add(
+            `. --force`,
+            () => {
+                console.log(chalk.green("addSvn ✅"));
+                resolve();
+            },
+            err => {
+                reject("error:addSvn 🚨", err);
+            }
+        );
+    });
 }
 
 function getPath() {
@@ -184,12 +222,28 @@ function getPath() {
     }
 }
 
+function cpDist() {
+    return new Promise((resolve, reject) => {
+        exec(sh_cp_dist, { cwd: dir, encoding: "utf8" }, err => {
+            if (err) {
+                reject("添加发布版本号文件失败 🚨", err);
+                return;
+            }
+            console.log(chalk.green("cpDist ✅"));
+            resolve();
+        });
+    });
+}
+
+function test() {}
+
 program
     .version("v" + version)
     .usage("[options] <file ...>")
     .option("-m, --message <msg>", "commit message ")
     .option("-e, --env <environment>", "set environment")
-    .option("-t, --ftype <filetype>", "publish file type");
+    .option("-t, --ftype <file_type>", "publish file type")
+    .option("--delete", "before add delete file");
 program
     .command("start")
     .description("启动发布打包发布工具")
@@ -197,6 +251,7 @@ program
         console.log(chalk.green("启动发布🚀🚀🚀"));
         st = new Date();
         runPublish();
+        //test();
     });
 
 program.parse(process.argv);

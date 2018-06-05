@@ -1,6 +1,6 @@
 # svn 发布工具
 
-### 安装
+### 安装/更新
 
 *   windows: `npm install pubsg -g`
 *   mac: `sudo npm install pubsg -g`
@@ -24,6 +24,10 @@
 
 #### 添加 自定义配置文件的  名称 [publishSet.json]
 
+#### npm 设置 (每次发布不添加 tag 标签)
+
+`npm config set git-tag-version false`
+
 ### 发布
 
 `pubsg start`
@@ -32,7 +36,9 @@
 
 *   `--ftype/-t [js,html,png]`:本次需要更新文件类型，默认是 `js,html,css` `-t all`:为[js,png,svg,gif,css,html]
 *   `--message/-m [commit message]`:svn 提交的 msg，默认是 `defaultMessage`
+*   `--delete`:先删除不需要的文件，再添加文件
 
 ### 发布日志
 
 *   2018-5-2 :添加项目版本控制
+*   2018-6-5 :移除默认删除文件，需要加 --delete
