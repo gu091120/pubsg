@@ -5,8 +5,9 @@ import { exec, spawn } from "child_process";
 import chalk from "chalk";
 import path from "path";
 const { version } = require("../package.json");
+
 const dir = process.cwd();
-const pgj = require(dir + "/package.json");
+const pgj = require(path.join(dir, "/package.json"));
 const publishSet = pgj.publishSet;
 const pVersion = pgj.version;
 
@@ -22,7 +23,7 @@ let svn_path,
 
 const defaultFileType = `*.js *.html *.css`;
 
-const addVersion = async function addVersion(callback) {
+function addVersion(callback) {
     let arr = pVersion.split(".");
     let type = "patch";
     if (arr[2] === "999") {
@@ -42,9 +43,9 @@ const addVersion = async function addVersion(callback) {
             resolve();
         });
     });
-};
+}
 
-const runPublish = async function() {
+async function runPublish() {
     init();
     try {
         await buildStatic();
@@ -59,11 +60,12 @@ const runPublish = async function() {
         console.log(e);
         //console.log(chalk.red(type), msg);
     }
-};
+}
 function init() {
     let { svnPath, distPath } = getPath();
-    svn_path = path.resolve(dir, svnPath);
-    dist_path = path.resolve(dir, distPath);
+
+    svn_path = path.join(dir, svnPath);
+    dist_path = path.join(dir, distPath);
     sh_build = publishSet.builShell;
     if (!svn_path || !dist_path) {
         console.log(chalk.red("发布失败 🚨"));
@@ -130,7 +132,7 @@ function addDateFile() {
 
 function buildStatic() {
     return new Promise((reslove, reject) => {
-        arr = sh_build.split(" ");
+        let arr = sh_build.split(" ");
         const strem = spawn(arr.splice(0, 1)[0], arr, {
             cwd: dir,
             encoding: "utf8"
@@ -141,7 +143,7 @@ function buildStatic() {
         strem.stderr.on("data", data => {
             const st = process.stderr;
             st.cursorTo(0);
-            st.write(`📦 ${chalk.magenta(data)} `);
+            st.write(`${chalk.magenta(data)} `);
             st.clearLine(1);
         });
         strem.stdout.on("end", () => {
@@ -210,7 +212,7 @@ function svnAdd() {
 
 function getPath() {
     try {
-        return require(path.resolve(dir, publishSet.mySet));
+        return require(path.join(dir, publishSet.mySet));
     } catch (e) {
         try {
             return publishSet

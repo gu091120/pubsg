@@ -1,11 +1,12 @@
 {
     "name": "pubsg",
-    "version": "0.0.13",
+    "version": "0.0.17",
     "description": "",
     "main": "bin/pubsg.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "babel src -d bin --ignore '**/__test__/'"
+        "test": "npm uninstall pubsg -g && npm run build && npm i . -g ",
+        "build": "babel src -d bin --ignore '**/__test__/'",
+        "pub": "npm run build &&  npm version patch && npm publish"
     },
     "repository": {
         "type": "git",

@@ -2,8 +2,8 @@
 
 ### 安装/更新
 
-*   windows: `npm install pubsg -g`
-*   mac: `sudo npm install pubsg -g`
+-   windows: `npm install pubsg -g`
+-   mac: `sudo npm install pubsg -g`
 
 ### install
 
@@ -34,11 +34,12 @@
 
 ### 参数
 
-*   `--ftype/-t [js,html,png]`:本次需要更新文件类型，默认是 `js,html,css` `-t all`:为[js,png,svg,gif,css,html]
-*   `--message/-m [commit message]`:svn 提交的 msg，默认是 `defaultMessage`
-*   `--delete`:先删除不需要的文件，再添加文件
+-   `--ftype/-t [js,html,png]`:本次需要更新文件类型，默认是 `js,html,css` `-t all`:为[js,png,svg,gif,css,html]
+-   `--message/-m [commit message]`:svn 提交的 msg，默认是 `defaultMessage`
+-   `--delete`:先删除不需要的文件，再添加文件
 
 ### 发布日志
 
-*   2018-5-2 :添加项目版本控制
-*   2018-6-5 :移除默认删除文件，需要加 --delete
+-   2018-05-02 : 添加项目版本控制
+-   2018-06-05 : 移除默认删除文件，需要加 --delete
+-   2018-06-25 : 1、使用 ES7 async 处理异步 2、babel 打包 3、添加自动发布版本/测试脚本
