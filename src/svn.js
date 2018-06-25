@@ -1,17 +1,15 @@
-"use strict";
-
-var spawn = require("child_process").spawn;
+const spawn = require("child_process").spawn;
 
 function Svn(option) {
-    var defaultOpt = {
+    const defaultOpt = {
         shell: true,
         ecoding: "utf8"
     };
     this.option = Object.assign(option, defaultOpt);
 }
 
-Svn.prototype.cmd = function (argArr, success, error) {
-    var proc = void 0;
+Svn.prototype.cmd = function(argArr, success, error) {
+    let proc;
     try {
         proc = spawn("svn", argArr, this.option);
     } catch (e) {
@@ -19,39 +17,39 @@ Svn.prototype.cmd = function (argArr, success, error) {
     }
     proc.stdout.setEncoding("utf8");
     proc.stderr.setEncoding("utf8");
-    proc.stdout.on("data", function (data) {
+    proc.stdout.on("data", data => {
         console.log(data);
     });
-    proc.stdout.on("end", function () {
+    proc.stdout.on("end", () => {
         success && success();
     });
-    proc.stderr.on("data", function (err) {
+    proc.stderr.on("data", err => {
         console.log(err);
         error && error(err);
         process.exit();
     });
 };
 
-Svn.prototype.add = function (str, success, error) {
-    var opt = ["add"];
+Svn.prototype.add = function(str, success, error) {
+    let opt = ["add"];
     opt = opt.concat(str.split(" "));
     this.cmd(opt, success, error);
 };
 
-Svn.prototype.del = function (str, success, error) {
-    var opt = ["delete"];
+Svn.prototype.del = function(str, success, error) {
+    let opt = ["delete"];
     opt = opt.concat(str.split(" "));
     this.cmd(opt, success, error);
 };
 
-Svn.prototype.commit = function (str, success, error) {
-    var opt = ["commit", "-m"];
+Svn.prototype.commit = function(str, success, error) {
+    let opt = ["commit", "-m"];
     opt = opt.concat(str.split(" "));
     this.cmd(opt, success, error);
 };
 
-Svn.prototype.update = function (str, success, error) {
-    var opt = ["update"];
+Svn.prototype.update = function(str, success, error) {
+    let opt = ["update"];
     opt = opt.concat(str.split(" "));
     this.cmd(opt, success, error);
 };
