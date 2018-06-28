@@ -4,12 +4,8 @@ import Svn from "./svn";
 import { exec, spawn } from "child_process";
 import chalk from "chalk";
 import path from "path";
-const { version } = require("../package.json");
-
+const { version } = require(path.join(__dirname + "./../package.json"));
 const dir = process.cwd();
-const pgj = require(path.join(dir, "/package.json"));
-const publishSet = pgj.publishSet;
-const pVersion = pgj.version;
 
 let svn_path,
     dist_path,
@@ -19,6 +15,9 @@ let svn_path,
     st,
     file_type,
     pv,
+    pgj,
+    publishSet,
+    pVersion,
     svn;
 
 const defaultFileType = `*.js *.html *.css`;
@@ -62,6 +61,9 @@ async function runPublish() {
     }
 }
 function init() {
+    pgj = require(path.join(dir, "/package.json"));
+    publishSet = pgj.publishSet;
+    pVersion = pgj.version;
     let { svnPath, distPath } = getPath();
 
     svn_path = path.join(dir, svnPath);

@@ -46,14 +46,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-const { version } = require("../package.json");
-
+const { version } = require(_path2.default.join(__dirname + "./../package.json"));
 const dir = process.cwd();
-const pgj = require(_path2.default.join(dir, "/package.json"));
-const publishSet = pgj.publishSet;
-const pVersion = pgj.version;
 
-let svn_path, dist_path, shClearSvn, sh_cp_dist, sh_build, st, file_type, pv, svn;
+let svn_path, dist_path, shClearSvn, sh_cp_dist, sh_build, st, file_type, pv, pgj, publishSet, pVersion, svn;
 
 const defaultFileType = `*.js *.html *.css`;
 
@@ -80,6 +76,9 @@ function addVersion(callback) {
 }
 
 function init() {
+    pgj = require(_path2.default.join(dir, "/package.json"));
+    publishSet = pgj.publishSet;
+    pVersion = pgj.version;
     let { svnPath, distPath } = getPath();
 
     svn_path = _path2.default.join(dir, svnPath);
